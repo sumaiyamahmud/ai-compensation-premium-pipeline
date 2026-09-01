@@ -1,4 +1,8 @@
 # Databricks notebook source
+# /// script
+# [tool.databricks.environment]
+# environment_version = "5"
+# ///
 # DBTITLE 1,Project Overview
 # MAGIC %md
 # MAGIC # 💰 The AI Compensation Premium — From Scratch
@@ -71,6 +75,8 @@
 # MAGIC
 # MAGIC create or replace table comp_table_bronze as
 # MAGIC select * from read_files('/Volumes/dbacademy/get_started_de/compensation_data/survey_q1_2026.csv')
+# MAGIC
+# MAGIC
 
 # COMMAND ----------
 
@@ -151,6 +157,7 @@
 # MAGIC CURRENT_TIMESTAMP() AS processed_at
 # MAGIC from comp_table_bronze
 # MAGIC where base_salary is not null and base_salary > 40000
+# MAGIC
 
 # COMMAND ----------
 
@@ -161,16 +168,16 @@
 # MAGIC
 # MAGIC Create TWO Gold tables that answer the business question.
 # MAGIC
-# MAGIC ### Gold Table 1: `median_comp_by_role`
+# MAGIC ### Gold Table 1: `ai_compensation_premium`
 # MAGIC Median total compensation by role category.
 # MAGIC
 # MAGIC - `GROUP BY role_category`
-# MAGIC - Use `median()` for median total comp and base salary
-# MAGIC - Also calculate average total comp
+# MAGIC - Use `PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY total_comp)` for median
+# MAGIC - Also calculate median base salary and average total comp
 # MAGIC - `COUNT(*) AS sample_size`
 # MAGIC - `HAVING COUNT(*) >= 5` (small dataset, so low threshold)
 # MAGIC - `ORDER BY median_total_comp DESC`
-# MAGIC - Add `SELECT * FROM median_comp_by_role` at the end to see results
+# MAGIC - Add `SELECT * FROM ai_compensation_premium` at the end to see results
 # MAGIC
 # MAGIC ### Gold Table 2: `ai_premium_by_state_seniority`
 # MAGIC What is the AI premium when controlling for BOTH state AND seniority? Compare AI/ML vs Software Engineer at the same seniority level in the same state.
@@ -238,6 +245,7 @@
 # MAGIC ORDER BY premium_percent DESC;
 # MAGIC
 # MAGIC SELECT * FROM ai_premium_by_state_seniority;
+# MAGIC
 
 # COMMAND ----------
 
@@ -250,19 +258,18 @@
 # MAGIC
 # MAGIC 1. How many records are in Bronze? What companies are in the data?
 # MAGIC 2. Show 10 AI/ML records from Silver — do the transformations look right?
-# MAGIC 3. Show the full `median_comp_by_role` table — what's the AI premium?
+# MAGIC 3. Show the full `ai_compensation_premium` table — what's the AI premium?
 # MAGIC 4. Show `ai_premium_by_state_seniority` — which state has the biggest premium?
 # MAGIC 5. **Bonus:** Calculate the exact AI vs Software Engineering premium percentage
 
 # COMMAND ----------
 
-# DBTITLE 1,Step 5 - Verification Query 1
+# DBTITLE 1,Step 5 - Verification Queries
 # MAGIC %sql
 # MAGIC select * from comp_table_bronze
 
 # COMMAND ----------
 
-# DBTITLE 1,Step 5 - Verification Query 2
 # MAGIC %sql
 # MAGIC SELECT 'TOTAL' AS company_name, COUNT(*) AS total_rows FROM comp_table_bronze
 # MAGIC UNION ALL
@@ -273,7 +280,6 @@
 
 # COMMAND ----------
 
-# DBTITLE 1,Step 5 - Verification Query 3
 # MAGIC %sql
 # MAGIC select * from comp_table_silver
 # MAGIC where role_category == 'AI/ML'
@@ -281,19 +287,16 @@
 
 # COMMAND ----------
 
-# DBTITLE 1,Step 5 - Gold Table 1 Query
 # MAGIC %sql
 # MAGIC select * from dbacademy.get_started_de.median_comp_by_role
 
 # COMMAND ----------
 
-# DBTITLE 1,Step 5 - Gold Table 2 Query
 # MAGIC %sql
 # MAGIC select * from dbacademy.get_started_de.ai_premium_by_state_seniority
 
 # COMMAND ----------
 
-# DBTITLE 1,Bonus - AI vs SWE Premium %
 # MAGIC %sql
 # MAGIC with ai_median as (
 # MAGIC select median_total_comp
@@ -309,6 +312,3 @@
 # MAGIC
 # MAGIC select ai.median_total_comp, swe.median_total_comp, (ai.median_total_comp - swe.median_total_comp)/ swe.median_total_comp as premium_percent
 # MAGIC from ai_median ai, swe_median swe
-
-# COMMAND ----------
-
