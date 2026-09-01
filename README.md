@@ -60,7 +60,3 @@ When controlling for state and seniority, premiums range from +34% (MA, Senior) 
 ## Data Source
 
 Tech compensation survey data (Q1 2026) stored in `/Volumes/dbacademy/get_started_de/compensation_data/`
-
-## Course
-
-This project was built as part of the **Get Started with Data Engineering** course (Lesson 6: Build a Complete Medallion Pipeline) from Databricks Academy.
